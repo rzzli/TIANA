@@ -7,7 +7,7 @@ Transcription Factor Network Analysis with Self-Attention (tnasa) is a deep lear
 Graphical overview of the method:
 
 <p align="center">
-<img src="https://github.com/rzzli/tnasa/blob/main/image/flow1.jpg" width="900" height="480">
+<img src="https://github.com/rzzli/tnasa/blob/main/image/flow1.jpg" width="900" height="636">
 </p>
 
 
