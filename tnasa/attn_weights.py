@@ -9,12 +9,10 @@ import sys
 import random
 from tensorflow.keras.models import load_model
 print(sys.path)
-sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention/round1_code')
-from myAttn_grad import *
-from annotate_filters import *
-from constraint import *
+sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention/round2_code')
+from model_layers import *
 from pre_made_model import *
-from ig_attn2 import *
+from ig_attn import *
 from sklearn.model_selection import train_test_split
 from itertools import combinations
 import pandas as pd
@@ -27,9 +25,13 @@ from scipy.stats import rankdata
 #import multiprocessing
 import concurrent
 
+#This module computes attention attributes or scores from fully trained model, the output contains:
+#   combination_index, rank/ig/score, peak_idx, motif1 ,motif2 , loc1,loc2
+#
+
 
 class ComputePairRank:
-    def __init__(self,full_model,data_X_to_predict, label, steps=100, first_filter_num= 560, dropout_rate=0.4,attn_layer=8,
+    def __init__(self,full_model,data_X_to_predict, label, score_only=False, steps=100, first_filter_num= 560, dropout_rate=0.4,attn_layer=8,
                 cutoff='e4', padding_size=15,
                 cpath='/home/zhl022/daima/projects/dl_methods_improve/motif_pssm_Aug27/motif_npy/motif265_name_cutoff_Sep5.npy'):
         self.full_model=full_model
@@ -38,6 +40,7 @@ class ComputePairRank:
         self.dropout_rate=dropout_rate
         self.attn_layer=attn_layer
         self.label=label
+        self.score_only=score_only
         self.steps=steps
         self.cutoff=cutoff
         self.cpath=cpath
@@ -103,7 +106,8 @@ class ComputePairRank:
 
         #return self.model_attn_ig
 
-    def step3_compute_ig_attn(self):
+    #def step3_compute_ig_attn(self):
+    def step3a_compute_ig_attn(self):
 
         baseline= np.zeros(self.scores.shape[1:])
         for i in range(self.scores.shape[0]):
@@ -118,7 +122,11 @@ class ComputePairRank:
                                                         )
             self.ig_attn.append(current_ig) 
         self.ig_attn_max = np.array([x.numpy().max(axis=0) for x in self.ig_attn])  # max over 4 attn heads 
+
         #return self.ig_attn,self.ig_attn_max
+    def step3b_compute_score_attn(self):
+
+        self.ig_attn_max = np.array([x.numpy().max(axis=0) for x in self.scores])  # max over 4 attn heads 
 
     def step4_motif_cut_off(self):
         def get_cutoff():
@@ -155,11 +163,18 @@ class ComputePairRank:
         self.pos_loc_mtx=(self.pass_cut_mtx.sum(axis=2)>0).astype(int) #{0,1} nsample x 70
         #return self.pass_cut_mtx, self.pos_loc_mtx
     def step5_compute_ig_and_cutoff(self):
-        self.step1_compute_attn_score()
-        self.step2_make_attn_after_model()
-        self.step3_compute_ig_attn()
-        self.step4_motif_cut_off()
-        return self.ig_attn_max,self.pass_cut_mtx
+        if self.score_only==False:
+            self.step1_compute_attn_score()
+            self.step2_make_attn_after_model()
+            self.step3a_compute_ig_attn()
+            self.step4_motif_cut_off()
+            return self.ig_attn_max,self.pass_cut_mtx
+        elif self.score_only==True:
+            self.step1_compute_attn_score()
+            self.step2_make_attn_after_model()
+            self.step3b_compute_score_attn()
+            self.step4_motif_cut_off()
+            return self.ig_attn_max,self.pass_cut_mtx
 
 class CompEdges:
     def __init__(self,pass_cut_mtx,ig_mtx,method='rank',ncore=1):
@@ -262,6 +277,7 @@ class CompEdges:
 def get_edge_list(full_model,
                     data_X_to_predict, 
                     label,
+                    score_only=False,
                     ncore=1,
                     steps=100, 
                     first_filter_num= 560, 
@@ -271,8 +287,11 @@ def get_edge_list(full_model,
                     cpath='/home/zhl022/daima/projects/dl_methods_improve/motif_pssm_Aug27/motif_npy/motif265_name_cutoff_Sep5.npy',
                     cutoff='e4',
                     padding_size=15):
-    cpr=ComputePairRank(full_model,data_X_to_predict ,
-                        label=label,steps=steps, 
+    cpr=ComputePairRank(full_model,
+                        data_X_to_predict ,
+                        label=label,
+                        score_only=score_only, # if score_only is True, may wannt use method = 'ig'
+                        steps=steps, 
                         first_filter_num=first_filter_num,
                         dropout_rate=dropout_rate,
                         attn_layer=attn_layer,

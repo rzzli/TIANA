@@ -9,10 +9,8 @@ import sys
 import random
 from tensorflow.keras.models import load_model
 print(sys.path)
-sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention')
-from myAttn_grad import *
-from annotate_filters import *
-from constraint import *
+sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention/round2_code')
+from model_layers import *
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, BatchNormalization, Activation
