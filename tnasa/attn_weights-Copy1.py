@@ -12,7 +12,7 @@ print(sys.path)
 sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention/round2_code')
 from model_layers import *
 from pre_made_model import *
-from ig_attn_class import *
+from ig_attn import *
 from sklearn.model_selection import train_test_split
 from itertools import combinations
 import pandas as pd
@@ -48,6 +48,7 @@ class ComputePairRank:
 
         self.ig_attn=[]
         self.ig_attn_max=None
+        self.score_attn_max=None
         self.model_att=None
         self.att_out=None
         self.scores=None
@@ -56,7 +57,7 @@ class ComputePairRank:
         self.pass_cut_mtx=None
         self.pos_loc_mtx=None
         self.pre_att_out=None
-        self.ig_i_obj=None
+
 
     def step1_compute_attn_score(self):
         attn_layer_before = self.attn_layer-1
@@ -72,14 +73,10 @@ class ComputePairRank:
     def step2_make_attn_after_model(self):
         #att_out,scores,myvalue,model_att=self.step1_compute_attn_score()
         inputs = layers.Input(shape=self.scores.shape[1:])
-        #pre_layer= AttentionGrad_preLayer(value_shape=self.myvalue.shape[1:]) Dec 4 edits
-        #pre_layer= AttentionGrad_preLayer(myvalue=self.myvalue) #Dec 4 edits
-        pre_layer= AttentionGrad_preLayer(value_shape=self.myvalue.shape[1:]) # Dec 5 edits
+        pre_layer= AttentionGrad_preLayer(value_shape=self.myvalue.shape[1:])
         x=pre_layer(inputs)
         attg=AttentionGrad(embed_dim=self.first_filter_num/2,num_heads=4, ff_dim=self.first_filter_num,
-                    #pre_input_dim=self.pre_att_out.shape[1:], # Dec 4
-                    #pre_input=self.pre_att_out,# Dec 4 edits
-                    pre_input_dim=self.pre_att_out.shape[1:], #Dec 5
+                    pre_input_dim=self.pre_att_out.shape[1:],
                     mykernel=self.model_att.layers[-1].att.projection_kernel,
                     mybias=self.model_att.layers[-1].att.projection_bias )
         x  = attg(x)
@@ -98,36 +95,23 @@ class ComputePairRank:
             bias_initializer=keras.initializers.Constant(value=0),
             activity_regularizer=keras.regularizers.l1(1e-8))(x)
         x=layers.Activation('relu')(x)
-        """
         x=layers.Dense(1,    
             kernel_initializer=keras.initializers.TruncatedNormal(stddev=1e-2),
             kernel_regularizer=keras.regularizers.l2(5e-7),
             bias_initializer=keras.initializers.Constant(value=0),
             activity_regularizer=keras.regularizers.l1(1e-8))(x)
-        #outputs = layers.Activation('sigmoid')(x) Dec 4  edits
-        x=layers.Activation('relu')(x)""" # Dec4 edits
-        outputs=layers.Dense(1, activation='sigmoid',bias_initializer=None)(x)
+        outputs = layers.Activation('sigmoid')(x)
         self.model_attn_ig = tf.keras.Model(inputs=inputs, outputs=outputs)
         optimizer_learning=tf.keras.optimizers.Adam(learning_rate=0.00001)
         self.model_attn_ig.compile(optimizer=optimizer_learning, loss="binary_crossentropy", metrics=["accuracy"])
-        self.model_attn_ig.trainable=False
-
 
         #return self.model_attn_ig
-        # Dec 4 assign weights
-        for i in range(len(self.full_model.layers[self.attn_layer+1:])):
-            self.model_attn_ig.layers[3:][i].set_weights(self.full_model.layers[self.attn_layer+1:][i].weights)
-        self.model_attn_ig.layers[2].ffn.set_weights(self.full_model.layers[self.attn_layer].ffn.weights)
-        self.model_attn_ig.layers[2].layernorm1.set_weights(self.full_model.layers[self.attn_layer].layernorm1.weights)
-        self.model_attn_ig.layers[2].layernorm2.set_weights(self.full_model.layers[self.attn_layer].layernorm2.weights)
-        self.model_attn_ig.layers[2].batchnorm1.set_weights(self.full_model.layers[self.attn_layer].batchnorm1.weights)
-        self.model_attn_ig.layers[2].batchnorm2.set_weights(self.full_model.layers[self.attn_layer].batchnorm2.weights)
+
     #def step3_compute_ig_attn(self):
     def step3a_compute_ig_attn(self):
 
         baseline= np.zeros(self.scores.shape[1:])
         for i in range(self.scores.shape[0]):
-            """
             current_ig = integrated_gradients_attn_layer(self.scores[i,...],
                                                         mymodel=self.model_attn_ig,
                                                         baseline_freq=baseline,
@@ -137,25 +121,13 @@ class ComputePairRank:
                                                         label=self.label,
                                                         m_steps=self.steps
                                                         )
-            """
-            self.ig_i_obj=None
-            self.ig_i_obj=IgAttn(self.scores[i,...],
-                            mymodel=self.model_attn_ig,
-                            baseline_freq=baseline,
-                            myvalue_full=self.myvalue,
-                            my_pre_input_full=self.pre_att_out,
-                            current_i=i,
-                            label=self.label,
-                            m_steps=self.steps
-                            )
-            current_ig=self.ig_i_obj.integrated_gradients_attn_layer()
             self.ig_attn.append(current_ig) 
         self.ig_attn_max = np.array([x.numpy().max(axis=0) for x in self.ig_attn])  # max over 4 attn heads 
 
         #return self.ig_attn,self.ig_attn_max
     def step3b_compute_score_attn(self):
 
-        self.ig_attn_max = np.array([x.max(axis=0) for x in self.scores])  # max over 4 attn heads 
+        self.score_attn_max = np.array([x.numpy().max(axis=0) for x in self.scores])  # max over 4 attn heads 
 
     def step4_motif_cut_off(self):
         def get_cutoff():
@@ -193,21 +165,16 @@ class ComputePairRank:
         self.pos_loc_mtx=(self.pass_cut_mtx.sum(axis=2)> 0).astype(int) #{0,1} nsample x 70
         #return self.pass_cut_mtx, self.pos_loc_mtx
     def step5_compute_ig_and_cutoff(self):
-        if self.score_only==False:
-            self.step1_compute_attn_score()
-            self.step2_make_attn_after_model()
-            self.step3a_compute_ig_attn()
-            self.step4_motif_cut_off()
-            return self.ig_attn_max,self.pass_cut_mtx
-        elif self.score_only==True:
-            self.step1_compute_attn_score()
-            self.step2_make_attn_after_model()
-            self.step3b_compute_score_attn()
-            self.step4_motif_cut_off()
-            return self.ig_attn_max,self.pass_cut_mtx
+        self.step1_compute_attn_score()
+        self.step2_make_attn_after_model()
+        self.step3a_compute_ig_attn()
+        self.step3b_compute_score_attn()
+        self.step4_motif_cut_off()
+        return self.ig_attn_max,self.pass_cut_mtx,self.score_attn_max
+
 
 class CompEdges:
-    def __init__(self,pass_cut_mtx,ig_mtx,method='rank',ncore=1):
+    def __init__(self,pass_cut_mtx,ig_mtx,score_attn_max,method='rank',ncore=1):
         # need input rank matrix
         #pass_cut_mtx.shape 
         # rank or ig
@@ -222,6 +189,7 @@ class CompEdges:
         self.nsample_sym=None
         self.value_list=[[] for x in range(len(self.tfcom))]
         self.score_dict={}
+        self.score_attn_max=score_attn_max
         
         ### need operation
         ### 1. decide which mtx to move forward # rank or ig
@@ -309,7 +277,7 @@ def get_edge_list(full_model,
                     label,
                     score_only=False,
                     ncore=1,
-                    steps=50, 
+                    steps=100, 
                     first_filter_num= 560, 
                     dropout_rate=0.4,
                     method='rank',
@@ -328,7 +296,7 @@ def get_edge_list(full_model,
                         cutoff=cutoff,
                         cpath=cpath,
                         padding_size=padding_size)
-    ig_attn_max, pass_cut_mtx = cpr.step5_compute_ig_and_cutoff()
+    ig_attn_max, pass_cut_mtx ,score_attn_max = cpr.step5_compute_ig_and_cutoff()
     ce=CompEdges(pass_cut_mtx=pass_cut_mtx,
                     ig_mtx=ig_attn_max,
                     method=method,

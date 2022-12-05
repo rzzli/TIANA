@@ -11,14 +11,17 @@ def interpolate_dna_one_hots(baseline,dna_one_hot,msteps):
 
 
 def compute_gradients(dna_one_hots,mymodel,label):
+    tf.config.run_functions_eagerly(True)
+
     with tf.GradientTape() as tape:
         tape.watch(dna_one_hots)
         logits = mymodel(dna_one_hots)
-        #probs = tf.nn.softmax(logits, axis=-1)[:, target_class_idx]
         if label ==1:
-            probs=logits[0]
+            probs=2*tf.math.maximum(tf.subtract(logits,0.5) ,0.0)
+            print(probs)
         elif label ==0:
-            probs=1 - logits[0]
+            probs=2*tf.math.maximum(tf.subtract(0.5,logits),0.0)
+
     return tape.gradient(probs, dna_one_hots)
 
 
@@ -56,8 +59,10 @@ def integrated_gradients_attn_layer(input_array,
     input_array=tf.cast(input_array,tf.float32)
     baseline=tf.ones(input_array.shape)
     baseline=baseline * baseline_freq
-
+    print('abc')
+    print(mymodel.layers[1].myv[1,1,1],'aaa')
     mymodel.layers[1].myv = myvalue_full[current_i,...]
+    print(mymodel.layers[1].myv[1,1,1],'xxx')
     mymodel.layers[2].pre_input=my_pre_input_full[current_i,...]
 
     #print('value',mymodel.layers[1].myv.sum())

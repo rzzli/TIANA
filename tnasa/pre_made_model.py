@@ -393,7 +393,7 @@ def make_model_attn_abtba( output_bias=None, lr=5e-5):
 
 
 ####### OCT 3 use abtba motif
-def make_model_attn_cluster(num_tf,pad_size,max_len,pssm_path, output_bias=None, lr=5e-5):
+def make_model_attn_cluster(num_tf,pad_size,max_len,pssm_path, seq_size=300, output_bias=None, lr=5e-5):
     METRICS = [
       keras.metrics.TruePositives(name='tp'),
       keras.metrics.FalsePositives(name='fp'),
@@ -405,13 +405,13 @@ def make_model_attn_cluster(num_tf,pad_size,max_len,pssm_path, output_bias=None,
       keras.metrics.AUC(name='auc'),
       keras.metrics.AUC(name='prc', curve='PR'), # precision-recall curve
       tf.keras.metrics.Recall(name='recall_5',thresholds=0.5),
-      tf.keras.metrics.Recall(name='recall_1',thresholds=0.1)
+      tf.keras.metrics.Recall(name='recall_1',thresholds=0.9)
     ]
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
     batch_size = 128
     num_classes = 1
-    seq_size = 300
+    seq_size = seq_size # Dec3 update 
     n_channels = 4
     input_shape = (seq_size, n_channels)
     dropout_rate=0.4

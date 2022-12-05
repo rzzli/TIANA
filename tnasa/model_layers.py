@@ -435,10 +435,12 @@ class myMaxPool(tf.keras.layers.Layer):
 class AttentionGrad_preLayer(layers.Layer):
     def __init__(self,
                  value_shape,
+                 #myvalue,
                  **kwargs):
         super().__init__()
-        self.value_shape = value_shape
-        self.myv= tf.zeros(self.value_shape)
+        self.value_shape = value_shape # Dec 5 edit
+        self.myv= tf.zeros(self.value_shape) #Dec 5 edit
+        #self.myvalue=tf.convert_to_tensor(myvalue, dtype=tf.float32)
     def call(self, inputs, training, **kwargs):
         multihead_product= tf.einsum("...HNM,...MHI->...NHI", inputs, self.myv)
         return multihead_product
@@ -490,8 +492,9 @@ class AttentionGrad(layers.Layer):
         
         self.batchnorm1= layers.BatchNormalization()
         self.batchnorm2= layers.BatchNormalization()
-
-        self.pre_input = tf.zeros(pre_input_dim)
+        self.pre_input_dim= pre_input_dim #Dec5
+        self.pre_input = tf.zeros(self.pre_input_dim)#Dec5
+        #self.pre_input= tf.convert_to_tensor(pre_input, dtype=tf.float32)
 
     def call(self, inputs, training, **kwargs):
         #multihead_output = tf.einsum("...HNM,...MHI->...NHI", inputs, self.myvalue)
