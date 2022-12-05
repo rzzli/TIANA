@@ -29,8 +29,7 @@ class IgAttn:
         dna_one_hots = baseline_x +  msteps_x * delta
         return dna_one_hots
     def compute_gradients(self,dna_one_hots,mymodel,label):
-        tf.config.run_functions_eagerly(True)
-
+        #tf.config.run_functions_eagerly(True)
         with tf.GradientTape() as tape:
             tape.watch(dna_one_hots)
             logits = mymodel(dna_one_hots)
