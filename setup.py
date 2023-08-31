@@ -18,8 +18,8 @@ setup(
         'seaborn ==0.12.2',
         'logomaker ==0.8',
         'keras ==2.9.0',
+        'sklearn ==0.0.post1'
         'jupyter',
-        'sklearn',
 
     ],
     setup_requires=['flake8'],
