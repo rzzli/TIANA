@@ -46,5 +46,4 @@ python tiana.py --output_dir ./outd \
         --motif_pssm_path motif_pssm.npy \
         --motif_threshold_path motif_threshold.npy \
         --tf_map tf_group.npy \
-        --skip_train
 ```
