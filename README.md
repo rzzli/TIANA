@@ -47,3 +47,25 @@ python tiana.py --output_dir ./outd \
         --motif_threshold_path motif_threshold.npy \
         --tf_map tf_group.npy \
 ```
+Full usage
+```
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        required output directory
+  --train_positive_path TRAIN_POSITIVE_PATH
+                        required path to positive training data in one hot encoding
+  --validation_positive_path VALIDATION_POSITIVE_PATH
+                        required path to positive validation (holdout) data in one hot encoding
+  --trainval_positive_path TRAINVAL_POSITIVE_PATH
+                        required path to train and validation data in one hot encoding
+  --neg_path NEG_PATH   required path to negative (background) data in one hot encoding
+  --motif_pssm_path MOTIF_PSSM_PATH
+                        required path to motif pssm file
+  --motif_threshold_path MOTIF_THRESHOLD_PATH
+                        required path to motif threshold file
+  --tf_map TF_MAP       tf group info
+  --skip_train          raise this flag if skip the training process
+  --skip_html           raise this flag if skip the html generation
+  --skip_logo           raise this flag if skip the logo generation
+```
