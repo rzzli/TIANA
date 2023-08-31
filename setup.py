@@ -15,7 +15,7 @@ setup(
         'scipy ==1.9.0',
         'pandas ==1.2.4',
         'matplotlib ==3.3.2',
-        'seaborn =0.12.2',
+        'seaborn ==0.12.2',
         'logomaker ==0.8',
         'keras ==2.9.0'
         'jupyter',
