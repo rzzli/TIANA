@@ -27,3 +27,4 @@ setup(
     license = "MIT",
     keywords = "deep learning, attention, integrated gradients",
     url = "https://github.com/rzzli/TIANA",
+)
