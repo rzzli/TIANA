@@ -7,7 +7,7 @@ Transcription Factors Interaction Analysis using Neural Attention (TIANA)  is a 
 Graphical overview of the method:
 
 <p align="center">
-<img src="https://github.com/rzzli/TIANA/blob/main/image/coverFig1A.jpg" width="900" height="342">
+<img src="https://github.com/rzzli/TIANA/blob/main/image/coverFig1A.jpg"  >
 </p>
 
 
