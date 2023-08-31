@@ -1,4 +1,6 @@
-import numpy as np
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import pandas as pd
 from random import choices
@@ -9,17 +11,10 @@ import itertools
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-tf.random.set_seed(1)
-import sys
-import os
 import glob
-#from layers_helper import PositionalEncoding,AttentionBlock
-sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention/round3_code')
-from model_layers import *
-from pre_made_model import *
-from ig_attn import *
 from attn_weights import *
 from sklearn.model_selection import train_test_split
+tf.random.set_seed(1)
 
 
 
@@ -28,7 +23,7 @@ class EdgeWeights:
                  model_path,
                  pssm,
                  motif_cutoff_path,
-                 our_npy_dir,
+                 out_npy_dir,
                  neg_path,
                  pos_train_path,
                  pos_val_path=None,
@@ -51,15 +46,29 @@ class EdgeWeights:
         self.batch_size=batch_size
         self.seq_size=seq_size
         self.motif_threshold=motif_threshold
-        self.our_npy_dir=our_npy_dir
+        self.out_npy_dir=out_npy_dir
         self.neg_size = neg_size
         #self.attn_method=None
-        edge_np_rank_np=None
+        
         # attn type score/ig & rank/ig
         if self.score_only:
             self.attn_method = self.rank_or_ig + "_" + "score"
         else: 
             self.attn_method = self.rank_or_ig + "_" + "ig"
+
+        # output full npy path 
+        output_filename_pos = "full_pos_edge_" + self.attn_method +".npy"
+        self.full_npy_pos = os.path.join(self.out_npy_dir, output_filename_pos) 
+
+        output_filename_neg = "full_neg_edge_" + self.attn_method +".npy"
+        self.full_npy_neg = os.path.join(self.out_npy_dir, output_filename_neg)       
+        
+        # output filtered npy path 
+        output_filename_pos_filtered = "filtered_pos_edge_" + self.attn_method +".npy"
+        self.filtered_npy_pos = os.path.join(self.out_npy_dir, output_filename_pos_filtered) 
+
+        output_filename_neg_filtered = "filtered_neg_edge_" + self.attn_method +".npy"
+        self.filtered_npy_neg = os.path.join(self.out_npy_dir, output_filename_neg_filtered)    
 
         # load pssm, get first layer motif and rc (sum)
         with open(pssm, 'rb') as f:
@@ -110,31 +119,29 @@ class EdgeWeights:
             start = i*self.batch_size
             end = start +self.batch_size
             batch_pos=full_pos[start:end,...]
-            if batch_pos.shape[0]>1:
-                edge_list_rank=get_edge_list(self.model,
-                                            batch_pos,
-                                            method=self.rank_or_ig ,
-                                            score_only=self.score_only,
-                                            label=1,
-                                            ncore=self.ncore,
-                                            first_filter_num=self.first_filter_num,
-                                            cpath=self.motif_cutoff_path,
-                                            padding_size=self.npad,
-                                            cutoff=self.motif_threshold,)
-                edge_np_rank_np=np.array(edge_list_rank)
-                if edge_np_rank_np.ndim ==1:
-                    continue
-                else:
-                    # fix index on column 2 (3rd column)
-                    edge_np_rank_np[:,2] += start
 
-
-                    out_file_name = "pos_"+ self.attn_method + "_" + self.motif_threshold + "_batch_" + str(self.batch_size) + "_" + str(i)+".npy"
-                    out_full_path = os.path.join(self.our_npy_dir,out_file_name)
-                    with open(out_full_path, 'wb') as f:
-                        np.save(f, edge_np_rank_np)
-            else:
+            edge_list_rank=get_edge_list(self.model,
+                                        batch_pos,
+                                        method=self.rank_or_ig ,
+                                        score_only=self.score_only,
+                                        label=1,
+                                        ncore=self.ncore,
+                                        first_filter_num=self.first_filter_num,
+                                        cpath=self.motif_cutoff_path,
+                                        padding_size=self.npad,
+                                        cutoff=self.motif_threshold,)
+            edge_np_rank_np=np.array(edge_list_rank)
+            if edge_np_rank_np.ndim ==1:
                 continue
+            else:
+                # fix index on column 2 (3rd column)
+                edge_np_rank_np[:,2] += start
+
+
+                out_file_name = "pos_"+ self.attn_method + "_" + self.motif_threshold + "_batch_" + str(self.batch_size) + "_" + str(i)+".npy"
+                out_full_path = os.path.join(self.out_npy_dir,out_file_name)
+                with open(out_full_path, 'wb') as f:
+                    np.save(f, edge_np_rank_np)
     
     def batch_compute_neg(self):
         full_neg = self.load_neg()
@@ -145,36 +152,33 @@ class EdgeWeights:
             start = i*self.batch_size
             end = start +self.batch_size
             batch_neg=full_neg[start:end,...]
-            
-            if batch_neg.shape[0]>1:
-                edge_list_rank=get_edge_list(self.model,
-                                            batch_neg,
-                                            method=self.rank_or_ig ,
-                                            score_only=self.score_only,
-                                            label=0,
-                                            ncore=self.ncore,
-                                            first_filter_num=self.first_filter_num,
-                                            cpath=self.motif_cutoff_path,
-                                            padding_size=self.npad,
-                                            cutoff=self.motif_threshold,)
-                edge_np_rank_np=np.array(edge_list_rank)
-                if edge_np_rank_np.ndim ==1:
-                    continue
-                else:
-                # fix index on column 2 (3rd column)
-                    edge_np_rank_np[:,2] += start
 
-
-                    out_file_name = "neg_" + self.attn_method + "_" +  self.motif_threshold + "_batch_" + str(self.batch_size) + "_" + str(i)+".npy"
-                    out_full_path = os.path.join(self.our_npy_dir,out_file_name)
-                    with open(out_full_path, 'wb') as f:
-                        np.save(f, edge_np_rank_np)
-            else:
+            edge_list_rank=get_edge_list(self.model,
+                                        batch_neg,
+                                        method=self.rank_or_ig ,
+                                        score_only=self.score_only,
+                                        label=0,
+                                        ncore=self.ncore,
+                                        first_filter_num=self.first_filter_num,
+                                        cpath=self.motif_cutoff_path,
+                                        padding_size=self.npad,
+                                        cutoff=self.motif_threshold,)
+            edge_np_rank_np=np.array(edge_list_rank)
+            if edge_np_rank_np.ndim ==1:
                 continue
+            else:
+            # fix index on column 2 (3rd column)
+                edge_np_rank_np[:,2] += start
+
+
+                out_file_name = "neg_" + self.attn_method + "_" +  self.motif_threshold + "_batch_" + str(self.batch_size) + "_" + str(i)+".npy"
+                out_full_path = os.path.join(self.out_npy_dir,out_file_name)
+                with open(out_full_path, 'wb') as f:
+                    np.save(f, edge_np_rank_np)
     
     def merge_pos_npy(self):
         pattern = "pos_*.npy"
-        npy_files  = os.path.join(self.our_npy_dir,pattern)
+        npy_files  = os.path.join(self.out_npy_dir,pattern)
         concatenated_array = None
         for npy_file in sorted(glob.glob(npy_files)):
             with open(npy_file, 'rb') as f:
@@ -183,14 +187,14 @@ class EdgeWeights:
                 concatenated_array = loaded_array
             else:
                 concatenated_array = np.concatenate((concatenated_array, loaded_array), axis=0)
-        output_filename = "full_pos_edge_" + self.attn_method +".npy"
-        output_path = os.path.join(self.our_npy_dir, output_filename) 
-        with open(output_path, 'wb') as f:
+        #output_filename = "full_pos_edge_" + self.attn_method +".npy"
+        #output_path = os.path.join(self.out_npy_dir, output_filename) 
+        with open(self.full_npy_pos, 'wb') as f:
             np.save(f, concatenated_array)             
 
     def merge_neg_npy(self):
         pattern = "neg_*.npy"
-        npy_files  = os.path.join(self.our_npy_dir,pattern)
+        npy_files  = os.path.join(self.out_npy_dir,pattern)
         concatenated_array = None
         for npy_file in sorted(glob.glob(npy_files)):
             with open(npy_file, 'rb') as f:
@@ -199,7 +203,34 @@ class EdgeWeights:
                 concatenated_array = loaded_array
             else:
                 concatenated_array = np.concatenate((concatenated_array, loaded_array), axis=0)
-        output_filename = "full_neg_edge_" + self.attn_method +".npy"
-        output_path = os.path.join(self.our_npy_dir, output_filename) 
-        with open(output_path, 'wb') as f:
-            np.save(f, concatenated_array) 
+        #output_filename = "full_neg_edge_" + self.attn_method +".npy"
+        #output_path = os.path.join(self.out_npy_dir, output_filename) 
+        with open(self.full_npy_neg, 'wb') as f:
+            np.save(f, concatenated_array)   
+    
+    def filter_edge_pos(self,cutoff=0.7):
+        cutoff_pos = cutoff
+        full_pos = self.load_pos()
+        assert os.path.exists(self.full_npy_pos), "File does not exist"
+        with open(self.full_npy_pos,'rb') as f:
+            pos_edge = np.load(f)
+        pos_predict=self.model.predict(full_pos)
+        pos_predict=pos_predict.reshape(-1)
+        pos_where=np.where(pos_predict>cutoff_pos)[0]
+        pos_edge_filtered=pos_edge[np.isin(pos_edge[:,2],pos_where),:]
+        with open(self.filtered_npy_pos, 'wb') as f:
+            np.save(f, pos_edge_filtered) 
+    
+    def filter_edge_neg(self,cutoff=0.7):
+        cutoff_neg = 1- cutoff
+        full_neg = self.load_neg()
+        full_neg = full_neg[:self.neg_size,...]
+        assert os.path.exists(self.full_npy_neg), "File does not exist"
+        with open(self.full_npy_neg,'rb') as f:
+            neg_edge = np.load(f)
+        neg_predict=self.model.predict(full_neg)
+        neg_predict=neg_predict.reshape(-1)
+        neg_where=np.where(neg_predict < cutoff_neg)[0]
+        neg_edge_filtered=neg_edge[np.isin(neg_edge[:,2],neg_where),:]
+        with open(self.filtered_npy_neg, 'wb') as f:
+            np.save(f, neg_edge_filtered)

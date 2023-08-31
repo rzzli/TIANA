@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import pandas as pd
 from random import choices
@@ -8,27 +11,13 @@ import itertools
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-tf.random.set_seed(1)
-import sys
-#from layers_helper import PositionalEncoding,AttentionBlock
-sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention/round3_code')
+import time
 from model_layers import *
 from pre_made_model import *
-from ig_attn import *
-from attn_weights import *
 from sklearn.model_selection import train_test_split
 
+tf.random.set_seed(1)
 tf.config.run_functions_eagerly(True)
-
-### maybe not necessary imports
-import matplotlib.pyplot as plt
-import seaborn as sns
-import time
-from tensorflow.keras.models import load_model
-from statannot import add_stat_annotation
-from scipy.stats import rankdata
-import imblearn
-from imblearn.under_sampling import RandomUnderSampler 
 
 def data_loader(pos_train_path,pos_val_path,neg_path):
     """

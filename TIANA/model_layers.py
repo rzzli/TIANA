@@ -175,19 +175,7 @@ class mha(tf.keras.layers.Layer):
             raise ValueError(
                 "the number of elements in 'key' must be equal to the same as the number of elements in 'value'"
             )
-        """
-        if mask is not None:
-            if len(mask.shape) < 2:
-                raise ValueError("'mask' must have atleast 2 dimensions")
-            if query.shape[-2] != mask.shape[-2]:
-                raise ValueError(
-                    "mask's second to last dimension must be equal to the number of elements in 'query'"
-                )
-            if key.shape[-2] != mask.shape[-1]:
-                raise ValueError(
-                    "mask's last dimension must be equal to the number of elements in 'key'"
-                )
-        """
+
         # Linear transformations
         query = tf.einsum("...NI , HIO -> ...NHO", query, self.query_kernel)
         key = tf.einsum("...MI , HIO -> ...MHO", key, self.key_kernel)
@@ -202,16 +190,7 @@ class mha(tf.keras.layers.Layer):
         logits = tf.einsum("...NHO,...MHO->...HNM", query, key)
 
         # apply mask
-        """
-        if mask is not None:
-            mask = tf.cast(mask, tf.float32)
 
-            # possibly expand on the head dimension so broadcasting works
-            if len(mask.shape) != len(logits.shape):
-                mask = tf.expand_dims(mask, -3)
-
-            logits += -10e9 * (1.0 - mask)
-        """
         attn_coef = tf.nn.softmax(logits)
 
             # attention dropout
@@ -402,7 +381,8 @@ class AttentionBlock(layers.Layer):
     
 ####################### Jul 26 add maxpool
 class myMaxPool(tf.keras.layers.Layer):
-    """This max pool function takes the max of forward and rc 
+    """
+    This max pool function takes the max of forward and rc 
         of motif scores
         
         Input dim: (sample n (n), seq len (l), # of motif lib (m))

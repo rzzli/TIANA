@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -5,11 +8,8 @@ import numpy as np
 tf.random.set_seed(1)
 import time
 import math
-import sys
 import random
 from tensorflow.keras.models import load_model
-print(sys.path)
-sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention/round2_code')
 from model_layers import *
 from pre_made_model import *
 from ig_attn_class import *
@@ -17,17 +17,14 @@ from sklearn.model_selection import train_test_split
 from itertools import combinations
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import itertools
-from itertools import combinations
-from statannot import add_stat_annotation
 from scipy.stats import rankdata
 #import multiprocessing
 import concurrent
 
+
 #This module computes attention attributes or scores from fully trained model, the output contains:
 #   combination_index, rank/ig/score, peak_idx, motif1 ,motif2 , loc1,loc2
-#
 
 
 class ComputePairRank:
@@ -98,14 +95,6 @@ class ComputePairRank:
             bias_initializer=keras.initializers.Constant(value=0),
             activity_regularizer=keras.regularizers.l1(1e-8))(x)
         x=layers.Activation('relu')(x)
-        """
-        x=layers.Dense(1,    
-            kernel_initializer=keras.initializers.TruncatedNormal(stddev=1e-2),
-            kernel_regularizer=keras.regularizers.l2(5e-7),
-            bias_initializer=keras.initializers.Constant(value=0),
-            activity_regularizer=keras.regularizers.l1(1e-8))(x)
-        #outputs = layers.Activation('sigmoid')(x) Dec 4  edits
-        x=layers.Activation('relu')(x)""" # Dec4 edits
         outputs=layers.Dense(1, activation='sigmoid',bias_initializer=None)(x)
         self.model_attn_ig = tf.keras.Model(inputs=inputs, outputs=outputs)
         optimizer_learning=tf.keras.optimizers.Adam(learning_rate=0.00001)
@@ -127,17 +116,6 @@ class ComputePairRank:
 
         baseline= np.zeros(self.scores.shape[1:])
         for i in range(self.scores.shape[0]):
-            """
-            current_ig = integrated_gradients_attn_layer(self.scores[i,...],
-                                                        mymodel=self.model_attn_ig,
-                                                        baseline_freq=baseline,
-                                                        myvalue_full=self.myvalue,
-                                                        my_pre_input_full=self.pre_att_out,
-                                                        current_i=i,
-                                                        label=self.label,
-                                                        m_steps=self.steps
-                                                        )
-            """
             self.ig_i_obj=None
             self.ig_i_obj=IgAttn(self.scores[i,...],
                             mymodel=self.model_attn_ig,
@@ -244,18 +222,7 @@ class CompEdges:
     ######
     #compute 
     ######
-    '''
-    def add_element(self,mydict, key, value):
-        if key not in mydict:
-            mydict[key] = []
-        mydict[key].append(value)
-        
-    def merge_dicts(self,main_dict, new_dict ):
-        new_dict = copy.deepcopy(main_dict)
-        for key, value in new_dict.items():
-            new_dict.setdefault(key, []).extend(value)
-        self.score_dict=new_dict
-    '''    
+  
     def loc_pair_add_attn(self,pair_info_row):
         #current_idx=pair_info_row[3]
         #pair0=pair_info_row[0]

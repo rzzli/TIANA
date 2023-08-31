@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -5,11 +8,8 @@ import numpy as np
 tf.random.set_seed(1)
 import time
 import math
-import sys
 import random
 from tensorflow.keras.models import load_model
-print(sys.path)
-sys.path.append('/gpfs/data01/glasslab/home/zhl022/daima/to_share/DeepLearningAttention/round2_code')
 from model_layers import *
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
