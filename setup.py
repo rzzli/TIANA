@@ -17,7 +17,7 @@ setup(
         'matplotlib ==3.3.2',
         'seaborn ==0.12.2',
         'logomaker ==0.8',
-        'keras ==2.9.0'
+        'keras ==2.9.0',
         'jupyter',
         'sklearn',
 
