@@ -11,3 +11,40 @@ Graphical overview of the method:
 </p>
 
 
+### Installation
+```bash
+git clone https://github.com/rzzli/TIANA.git
+cd TIANA
+pip install -e .
+```
+#### optional: install in a new conda environment
+```bash
+conda create -n TIANA_conda python=3.8.13
+conda activate TIANA_conda
+git clone https://github.com/rzzli/TIANA.git
+cd TIANA
+pip install -e .
+```
+
+### Uninstall TIANA/conda environment
+uninstall TIANA package
+```bash
+pip uninstall TIANA
+```
+remove the conda environment
+```bash
+conda env remove -n TIANA_conda
+```
+
+### run TIANA
+```bash
+python tiana.py --output_dir ./outd \
+        --train_positive_path pu1_train.npy \
+        --validation_positive_path pu1_val.npy \
+        --trainval_positive_path pu1_trainval.npy \
+        --neg_path mm10_neg200bp.npy \
+        --motif_pssm_path motif_pssm.npy \
+        --motif_threshold_path motif_threshold.npy \
+        --tf_map tf_group.npy \
+        --skip_train
+```
