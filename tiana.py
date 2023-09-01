@@ -45,17 +45,17 @@ def parse_arguments():
                         required=True, help="tf group info")        
     
     # optional flag 
-    
+        
     parser.add_argument("--skip_train",dest='skip_train', 
-                            action='store_false', default=True,
+                            action='store_true', default=False,
                             help="raise this flag if skip the training process")
 
     parser.add_argument("--skip_html",dest='skip_html', 
-                            action='store_false', default=True,
+                            action='store_true', default=False,
                             help="raise this flag if skip the html generation")
     
     parser.add_argument("--skip_logo",dest='skip_logo', 
-                            action='store_false', default=True,
+                            action='store_true', default=False,
                             help="raise this flag if skip the logo generation")
     
 
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     os.makedirs(logo_dir, exist_ok=True)
     
-    if not skip_train:
+    if skip_train==False:
         step1_train(pssm=motif_pssm_path,
                     pos_train_path=train_positive_path,
                     pos_val_path=validation_positive_path,
@@ -143,11 +143,11 @@ if __name__ == "__main__":
     df=motif_obj.mergeRows()
     df.to_csv(result_df_path,index=False)
     
-    if not skip_logo:
+    if skip_logo==False:
         make_logo(motif_pssm_path,motif_threshold_path,logo_dir)
     
     
-    if not skip_html:
+    if skip_html==False:
         # check if logo is empty
         logo_folder_contents = os.listdir(logo_dir)
         assert len(logo_folder_contents)>0, "logo dir is empty, make logo first"
