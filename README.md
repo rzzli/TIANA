@@ -48,7 +48,7 @@ python tiana.py --output_dir ./outd \
         --tf_map tf_group.npy \
 ```
 ### Demo data can be obtained [here](http://homer.ucsd.edu/zhl022/TIANA_data/TIANA_demo.tar.gz)
-### or:
+### or use command line
 ```
 wget http://homer.ucsd.edu/zhl022/TIANA_data/TIANA_demo.tar.gz
 tar -xvf TIANA_demo.tar.gz
