@@ -47,6 +47,26 @@ python tiana.py --output_dir ./outd \
         --motif_threshold_path motif_threshold.npy \
         --tf_map tf_group.npy \
 ```
+### run TIANA with pre-trained model
+##### For example, in TIANA_demo folder, there is a pre trained  model file "model_pu1"
+```bash
+# first, make a directory called ./outd
+mkdir -p ./outd
+# next, copy the model folder to ./outd and rename the "model_pu1" tp "model"
+cp -R /PATH/TO/model_pu1 ./outd/
+mv ./outd/model_pu1 ./outd/model
+
+python tiana.py --output_dir ./outd \
+        --train_positive_path pu1_train.npy \
+        --validation_positive_path pu1_val.npy \
+        --trainval_positive_path pu1_trainval.npy \
+        --neg_path mm10_neg200bp.npy \
+        --motif_pssm_path motif_pssm.npy \
+        --motif_threshold_path motif_threshold.npy \
+        --tf_map tf_group.npy \
+        --skip_train 
+```
+
 Full usage
 ```
 optional arguments:
