@@ -47,15 +47,22 @@ python tiana.py --output_dir ./outd \
         --motif_threshold_path motif_threshold.npy \
         --tf_map tf_group.npy \
 ```
+### Demo data can be obtained [here](http://homer.ucsd.edu/zhl022/TIANA_data/TIANA_demo.tar.gz)
+### or:
+```
+wget http://homer.ucsd.edu/zhl022/TIANA_data/TIANA_demo.tar.gz
+tar -xvf TIANA_demo.tar.gz
+```
 ### run TIANA with pre-trained model
 ##### For example, in TIANA_demo folder, there is a pre trained  model file "model_pu1"
 ```bash
 # first, make a directory called ./outd
 mkdir -p ./outd
-# next, copy the model folder to ./outd and rename the "model_pu1" tp "model"
-cp -R /PATH/TO/model_pu1 ./outd/
+# next, copy the model folder to ./outd and rename the "model_pu1" to "model"
+cp -R ./model_pu1 ./outd/
 mv ./outd/model_pu1 ./outd/model
 
+#run TIANA
 python tiana.py --output_dir ./outd \
         --train_positive_path pu1_train.npy \
         --validation_positive_path pu1_val.npy \
