@@ -120,7 +120,7 @@ class EdgeMotif:
             if pos_has.shape[0] * neg_has.shape[0] == 0:
                 return None
 
-            _, p = mannwhitneyu(pos_has[:, 1], neg_has[:, 1], method="auto")
+            _, p = mannwhitneyu(pos_has[:, 1], neg_has[:, 1])
             effect_size = effectSize(pos_has[:, 1], neg_has[:, 1])
             mean_pos = np.mean(pos_has[:, 1])
             mean_neg = np.mean(neg_has[:, 1])
