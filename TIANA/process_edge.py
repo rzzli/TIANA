@@ -130,13 +130,17 @@ class EdgeMotif:
         indices = range(len(self.tfcom))
         res_list = list(map(process_data, indices))
         res_list = [entry for entry in res_list if entry is not None]
-        
-        pair195=[]
-        for i,pair in enumerate(self.tfcom):
-            if 195 in pair:
-                pair195.append(i)
-        res_list_np=np.array(res_list)
-        res_list_np=res_list_np[~np.isin(res_list_np[:,0],pair195),:]
+
+        if self.tfn == 224:
+            # tal1 if in 224 motifs
+            pair195=[]
+            for i,pair in enumerate(self.tfcom):
+                if 195 in pair:
+                    pair195.append(i)
+            res_list_np=np.array(res_list)
+            res_list_np=res_list_np[~np.isin(res_list_np[:,0],pair195),:]
+        else:
+            res_list_np=np.array(res_list)
 
         self.res_df=pd.DataFrame(res_list_np,columns =['combination_id',
                                                 'mean_pos',
