@@ -45,7 +45,7 @@ python tiana.py --output_dir ./outd \
         --neg_path mm10_neg200bp.npy \
         --motif_pssm_path motif_pssm.npy \
         --motif_threshold_path motif_threshold.npy \
-        --tf_map tf_group.npy \
+        --tf_map tf_group.csv \
 ```
 ### Demo data can be obtained [here](http://homer.ucsd.edu/zhl022/TIANA_data/TIANA_demo.tar.gz)
 ### or use command line
