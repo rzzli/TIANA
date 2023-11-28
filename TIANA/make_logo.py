@@ -34,5 +34,6 @@ def make_logo(pssm,motif_cutoff_path,pre_path):
         file_path= pre_path+'/' + motif_name[i] +".png"
         plt.savefig(file_path,bbox_inches = 'tight')
     for i in range(ntf):
-        plotLogo(i)
+        if not motif_name[i].startswith("empty_motif"):
+            plotLogo(i)
     print("done making logos at",pre_path )
