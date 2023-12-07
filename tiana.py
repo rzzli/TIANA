@@ -11,6 +11,7 @@ from TIANA.training import train
 from TIANA.edge_weights import EdgeWeights
 from TIANA.process_edge import EdgeMotif
 from TIANA.make_logo import make_logo
+from TIANA.utils import *
 
 def parse_arguments():
     """
@@ -58,6 +59,9 @@ def parse_arguments():
                             action='store_true', default=False,
                             help="raise this flag if skip the logo generation")
     
+    parser.add_argument("--compute_rc",dest='compute_rc', 
+                            action='store_true', default=False,
+                            help="raise this flag if both forward and reverse complement of a motif should be considered; default is to combine both (false)")
 
     args = parser.parse_args()
     return args
@@ -90,6 +94,7 @@ if __name__ == "__main__":
     skip_logo=args.skip_logo
     skip_html=args.skip_html
     skip_train=args.skip_train
+    compute_rc=args.compute_rc
     
     #output directory 
     output_dir=args.output_dir
@@ -108,6 +113,9 @@ if __name__ == "__main__":
     os.makedirs(npy_edge_dir, exist_ok=True)
     os.makedirs(result_dir, exist_ok=True)
     os.makedirs(logo_dir, exist_ok=True)
+    
+    if compute_rc==True:
+        motif_pssm_path,motif_threshold_path,tf_map = make_rc(motif_pssm_path,motif_threshold_path,tf_map)
     
     if skip_train==False:
         step1_train(pssm=motif_pssm_path,
