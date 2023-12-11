@@ -98,6 +98,11 @@ class EdgeMotif:
         self.res_df_sub_short=None
         self.res_df_sub_short_redo_all_col =None
         
+                
+        # Dec 2023 add max to retrive motif loc
+        self.pos_edge_mtx_df_max_np=None
+        self.neg_edge_mtx_df_max_np=None
+        
     def mergeRows(self):
         self.neg_edge_mtx=self.neg_edge_mtx[self.neg_edge_mtx[:,-1]!=self.neg_edge_mtx[:,-2],:]
         self.pos_edge_mtx=self.pos_edge_mtx[self.pos_edge_mtx[:,-1]!=self.pos_edge_mtx[:,-2],:]
@@ -109,13 +114,13 @@ class EdgeMotif:
         #xdf.loc[xdf.groupby(['combination_index',"peak_idx"])["rank/ig"].idxmax(),:]
         pos_edge_mtx_df_max=pos_edge_mtx_df_max.loc[pos_edge_mtx_df_max.groupby(['combination_index',"peak_idx"])["rank/ig"].idxmax(),:]
 
-        neg_edge_mtx_df_max_np=neg_edge_mtx_df_max.to_numpy()
-        pos_edge_mtx_df_max_np=pos_edge_mtx_df_max.to_numpy()
+        self.neg_edge_mtx_df_max_np=neg_edge_mtx_df_max.to_numpy()
+        self.pos_edge_mtx_df_max_np=pos_edge_mtx_df_max.to_numpy()
 
         
         def process_data(i):
-            pos_has = pos_edge_mtx_df_max_np[pos_edge_mtx_df_max_np[:, 0] == i]
-            neg_has = neg_edge_mtx_df_max_np[neg_edge_mtx_df_max_np[:, 0] == i]
+            pos_has = self.pos_edge_mtx_df_max_np[self.pos_edge_mtx_df_max_np[:, 0] == i]
+            neg_has = self.neg_edge_mtx_df_max_np[self.neg_edge_mtx_df_max_np[:, 0] == i]
 
             if pos_has.shape[0] * neg_has.shape[0] == 0:
                 return None
