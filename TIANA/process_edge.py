@@ -97,12 +97,34 @@ class EdgeMotif:
         self.res_df_sub_short_redo_3col=None
         self.res_df_sub_short=None
         self.res_df_sub_short_redo_all_col =None
-        
-                
+
         # Dec 2023 add max to retrive motif loc
         self.pos_edge_mtx_df_max_np=None
         self.neg_edge_mtx_df_max_np=None
         
+    def get_tfs_spacing(self,row):
+        # compute spacing for self.res_df_sub_short_redo_all_col
+        tf1_name = row['tf1_name']
+        tf2_name = row['tf2_name']
+        tf1_idx = np.where(self.motif_name==tf1_name)[0][0]
+        tf2_idx = np.where(self.motif_name==tf2_name)[0][0]
+        # short list of [tf1_idx,tf2_idx]
+        tf_idx_match = [ tf1_idx,tf2_idx ]
+        # subset mtx
+        outmtx= self.pos_edge_mtx_df_max_np[np.isin(self.pos_edge_mtx_df_max_np[:, 3], tf_idx_match) & (np.isin(self.pos_edge_mtx_df_max_np[:, 4], tf_idx_match)),:] 
+        # subset tf1,tf2 left and right
+        tf1_left = outmtx[ outmtx[:,3]==tf1_idx,:]  # equals tf2_right
+        tf1_right = outmtx[ outmtx[:,4]==tf1_idx,:]  #equals tf2_left
+        # loc
+        tf1_loc = np.concatenate([tf1_left[:,5],tf1_right[:,6]])
+        tf2_loc = np.concatenate([tf1_left[:,6],tf1_right[:,5]])
+        tf1_loc_expand = (tf1_loc*4)+21
+        tf2_loc_expand = (tf2_loc*4)+21
+        spacing= np.abs(tf1_loc_expand - tf2_loc_expand)
+        mean_bp = int(np.mean(spacing) )
+        std_bp = int(np.std(spacing) )
+        return (mean_bp,std_bp)   
+    
     def mergeRows(self):
         self.neg_edge_mtx=self.neg_edge_mtx[self.neg_edge_mtx[:,-1]!=self.neg_edge_mtx[:,-2],:]
         self.pos_edge_mtx=self.pos_edge_mtx[self.pos_edge_mtx[:,-1]!=self.pos_edge_mtx[:,-2],:]
@@ -209,6 +231,7 @@ class EdgeMotif:
         self.res_df_sub_short_redo_all_col=self.res_df_sub_short.loc[good_idx_list,:]
         self.res_df_sub_short_redo_all_col=self.res_df_sub_short_redo_all_col.sort_values(['adjp','effect_size','pos_perc'],ascending=False)
         self.res_df_sub_short_redo_all_col.reset_index(inplace=True)
+        self.res_df_sub_short_redo_all_col['spacing (mean,std)']=self.res_df_sub_short_redo_all_col.apply(self.get_tfs_spacing,axis=1)
         return self.res_df_sub_short_redo_all_col
         
     def generate_html(self,result_df_path=None, html_dir='./'):
@@ -247,6 +270,8 @@ class EdgeMotif:
         table_label += label_color
         table_label +='">motif pair percent in background sequences</font></th>\n<th><font color="'
         table_label += label_color
+        table_label +='">spacing (mean,std) bp</font></th>\n<th><font color="'
+        table_label += label_color
         table_label +='">p value(-log10)</font></th>\n</tr>'
         ending = '</table>\n</body>\n</html>\n'
         
@@ -277,6 +302,8 @@ class EdgeMotif:
 
                 pos_perc_motif=str(np.round(row["pos_perc"],3))
                 neg_perc_motif=str(np.round(row["neg_perc"],3))
+                
+                space_tf1tf2=str(row["spacing (mean,std)"])
 
                 p_str= str(np.round(row["adjp"],3))
 
@@ -319,7 +346,11 @@ class EdgeMotif:
                 one_row += '<th>'
                 one_row += neg_perc_motif
                 one_row += '</th>\n'
-
+                
+                one_row += '<th>'
+                one_row += space_tf1tf2
+                one_row += '</th>\n'
+                
                 one_row += '<th>'
                 one_row += p_str
                 one_row += '</th>\n'
