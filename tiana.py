@@ -6,7 +6,7 @@ sys.path.insert(0,'TIANA')
 from argparse import ArgumentParser
 import argparse
 package_dir = os.path.dirname(os.path.abspath(__file__))
-
+import shutil
 from TIANA.training import train
 from TIANA.edge_weights import EdgeWeights
 from TIANA.process_edge import EdgeMotif
@@ -129,7 +129,9 @@ if __name__ == "__main__":
                     model_out_path=model_path)
     else:
         assert len(pretrained_model_path)>0, "must have a pretrained model if skip training"
-        model_path = pretrained_model_path
+        #copy pretrained dir to out dir
+        shutil.copytree(pretrained_model_path, model_path,dirs_exist_ok=True)
+        
     
     # step 2 compute edge from model
     print("loading model from the following path:")
