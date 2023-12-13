@@ -58,11 +58,7 @@ tar -xvf TIANA_demo.tar.gz
 ```bash
 # first, make a directory called ./outd
 mkdir -p ./outd
-# next, copy the model folder to ./outd and rename the "model_pu1" to "model"
-cp -R ./model_pu1 ./outd/
-mv ./outd/model_pu1 ./outd/model
-
-#run TIANA
+# next, run TIANA
 python tiana.py --output_dir ./outd \
         --train_positive_path pu1_train.npy \
         --validation_positive_path pu1_val.npy \
@@ -71,6 +67,7 @@ python tiana.py --output_dir ./outd \
         --motif_pssm_path motif_pssm.npy \
         --motif_threshold_path motif_threshold.npy \
         --tf_map tf_group.npy \
+        --pretrained_model_path ./model_pu1
         --skip_train 
 ```
 
