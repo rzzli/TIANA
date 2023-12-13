@@ -120,19 +120,20 @@ if __name__ == "__main__":
     
     if compute_rc==True:
         motif_pssm_path,motif_threshold_path,tf_map = make_rc(motif_pssm_path,motif_threshold_path,tf_map)
-    
+        
+    if skip_train==True:
+        assert len(pretrained_model_path)>0, "must have a pretrained model if skip training"
+        #copy pretrained dir to out dir
+        shutil.copytree(pretrained_model_path, model_path,dirs_exist_ok=True)
+        print('skipping training')
+        
     if skip_train==False:
         step1_train(pssm=motif_pssm_path,
                     pos_train_path=train_positive_path,
                     pos_val_path=validation_positive_path,
                     neg_path=neg_path,
                     model_out_path=model_path)
-    else:
-        assert len(pretrained_model_path)>0, "must have a pretrained model if skip training"
-        #copy pretrained dir to out dir
-        shutil.copytree(pretrained_model_path, model_path,dirs_exist_ok=True)
         
-    
     # step 2 compute edge from model
     print("loading model from the following path:")
     print(model_path)
