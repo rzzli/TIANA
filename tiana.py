@@ -43,7 +43,10 @@ def parse_arguments():
                         required=True, help="required path to motif threshold file")     
     
     parser.add_argument( "--tf_map",dest='tf_map',type=str,
-                        required=True, help="tf group info")        
+                        required=True, help="tf group info")  
+    
+    parser.add_argument('--pretrained_model_path',dest='pretrained_model_path', type=str, 
+                        default='', help='Optional pretrained model path')
     
     # optional flag 
         
@@ -90,6 +93,7 @@ if __name__ == "__main__":
     motif_pssm_path=args.motif_pssm_path
     motif_threshold_path=args.motif_threshold_path
     tf_map=args.tf_map
+    pretrained_model_path=args.pretrained_model_path
     
     skip_logo=args.skip_logo
     skip_html=args.skip_html
@@ -123,8 +127,13 @@ if __name__ == "__main__":
                     pos_val_path=validation_positive_path,
                     neg_path=neg_path,
                     model_out_path=model_path)
+    else:
+        assert len(pretrained_model_path)>0, "must have a pretrained model if skip training"
+        model_path = pretrained_model_path
     
     # step 2 compute edge from model
+    print("loading model from the following path:")
+    print(model_path)
     obj = EdgeWeights(model_path=model_path,
                   pssm=motif_pssm_path,
                   motif_cutoff_path=motif_threshold_path,
