@@ -58,16 +58,17 @@ tar -xvf TIANA_demo.tar.gz
 ```bash
 # first, make a directory called ./outd
 mkdir -p ./outd
+demo_data_folder=/path/to/TIANA_demo_upload
 # next, run TIANA
 python tiana.py --output_dir ./outd \
-        --train_positive_path pu1_train.npy \
-        --validation_positive_path pu1_val.npy \
-        --trainval_positive_path pu1_trainval.npy \
-        --neg_path mm10_neg200bp.npy \
-        --motif_pssm_path motif_pssm.npy \
-        --motif_threshold_path motif_threshold.npy \
-        --tf_map tf_group.npy \
-        --pretrained_model_path ./model_pu1 \
+        --train_positive_path $demo_data_folder/pu1_train.npy \
+        --validation_positive_path $demo_data_folder/pu1_val.npy \
+        --trainval_positive_path $demo_data_folder/pu1_trainval.npy \
+        --neg_path $demo_data_folder/mm10_neg200bp.npy \
+        --motif_pssm_path $demo_data_folder/motif_pssm.npy \
+        --motif_threshold_path $demo_data_folder/motif_threshold.npy \
+        --tf_map $demo_data_folder/tf_group.npy \
+        --pretrained_model_path $demo_data_folder/model_pretrained \
         --skip_train 
 ```
 
@@ -89,7 +90,9 @@ optional arguments:
   --motif_threshold_path MOTIF_THRESHOLD_PATH
                         required path to motif threshold file
   --tf_map TF_MAP       tf group info
-  --skip_train          raise this flag if skip the training process
+  --pretrained_model_path
+                        path to pre-trained model
+  --skip_train          raise this flag if skip the training process, must be used together with a pretrained model path
   --skip_html           raise this flag if skip the html generation
   --skip_logo           raise this flag if skip the logo generation
 ```
