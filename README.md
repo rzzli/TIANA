@@ -2,7 +2,7 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/rzzli/tnasa/issues)
 
 # TIANA
-Transcription Factors Interaction Analysis using Neural Attention (TIANA)  is a deep learning based method to derive transcription factor interactions from self-attention attributions. Through tracking the gradients inside the CNN-attention deep learning framework, TIANA enables interpertation of the transcription factor interactions that are essential in regulatory elements such as transcription factor binding sites and enhancers.
+Transcription factors cooperativity Inference Analysis with Neural Attention (TIANA) is a deep learning based method to derive transcription factor interactions from self-attention attributions. Through tracking the gradients inside the CNN-attention deep learning framework, TIANA enables interpertation of the transcription factor interactions that are essential in regulatory elements such as transcription factor binding sites and enhancers.
 
 Graphical overview of the method:
 
